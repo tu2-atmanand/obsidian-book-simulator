@@ -1,0 +1,182 @@
+/*
+Book Simulator Plugin Styles
+*/
+
+/* Main view container */
+.book-simulator-view {
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+}
+
+.book-simulator-main {
+	display: flex;
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+}
+
+/* File Explorer Panel */
+.book-simulator-explorer-panel {
+	width: 20%;
+	min-width: 200px;
+	height: 100%;
+	overflow: hidden;
+	border-right: 1px solid var(--background-modifier-border);
+	background-color: var(--background-secondary);
+}
+
+.book-simulator-explorer {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.book-simulator-explorer-header {
+	font-size: 14px;
+	font-weight: bold;
+	padding: 12px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+}
+
+.book-simulator-explorer-content {
+	flex: 1;
+	overflow-y: auto;
+	padding: 8px;
+}
+
+/* File Tree Items */
+.book-simulator-tree-item {
+	display: flex;
+	align-items: center;
+	padding: 4px 8px;
+	border-radius: 4px;
+	transition: background-color 0.1s;
+	user-select: none;
+}
+
+.book-simulator-tree-item.is-folder:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.book-simulator-tree-item.is-selected {
+	background-color: var(--background-modifier-hover);
+	font-weight: 600;
+}
+
+.book-simulator-tree-expand-icon {
+	font-size: 10px;
+	color: var(--text-muted);
+	width: 12px;
+	text-align: center;
+	transition: color 0.1s;
+}
+
+.book-simulator-tree-expand-icon:hover {
+	color: var(--text-normal);
+}
+
+.book-simulator-tree-spacer {
+	width: 12px;
+}
+
+.book-simulator-tree-icon {
+	margin-right: 8px;
+	width: 20px;
+	text-align: center;
+	font-size: 14px;
+}
+
+.book-simulator-tree-name {
+	font-size: 13px;
+	color: var(--text-normal);
+}
+
+/* Book Renderer Panel */
+.book-simulator-renderer-panel {
+	width: 80%;
+	height: 100%;
+	overflow: hidden;
+	background-color: var(--background-primary);
+}
+
+.book-simulator-renderer {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.book-simulator-renderer-header {
+	padding: 12px 24px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	background-color: var(--background-secondary);
+	font-size: 16px;
+	font-weight: bold;
+	color: var(--text-normal);
+}
+
+.book-simulator-renderer-content {
+	flex: 1;
+	overflow-y: auto;
+	padding: 24px;
+	font-family: var(--font-text);
+	font-size: var(--font-text-size);
+	line-height: var(--line-height-normal);
+	color: var(--text-normal);
+}
+
+/* Loading and Empty States */
+.book-simulator-loading,
+.book-simulator-empty-state {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	color: var(--text-muted);
+	font-style: italic;
+	font-size: 14px;
+	padding: 20px;
+	text-align: center;
+}
+
+.book-simulator-error {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	color: var(--text-error);
+	font-size: 14px;
+	padding: 20px;
+	text-align: center;
+}
+
+/* Markdown content styling */
+.book-simulator-renderer-content .markdown-rendered {
+	max-width: none;
+}
+
+.book-simulator-renderer-content h1,
+.book-simulator-renderer-content h2,
+.book-simulator-renderer-content h3,
+.book-simulator-renderer-content h4,
+.book-simulator-renderer-content h5,
+.book-simulator-renderer-content h6 {
+	margin-top: 1.5em;
+	margin-bottom: 0.5em;
+}
+
+.book-simulator-renderer-content h1:first-child,
+.book-simulator-renderer-content h2:first-child {
+	margin-top: 0;
+}
+
+.book-simulator-renderer-content p {
+	margin-bottom: 1em;
+}
+
+.book-simulator-renderer-content ul,
+.book-simulator-renderer-content ol {
+	margin-bottom: 1em;
+}
+

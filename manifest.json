@@ -1,0 +1,10 @@
+{
+	"id": "obsidian-book-simulator",
+	"name": "Book Simulator",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Simulates a book view by combining multiple notes from a folder into a continuous reading experience.",
+	"author": "tu2-atmanand",
+	"authorUrl": "https://github.com/tu2-atmanand",
+	"isDesktopOnly": false
+}
