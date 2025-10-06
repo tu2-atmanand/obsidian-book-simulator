@@ -1,10 +1,10 @@
 {
-	"id": "obsidian-book-simulator",
+	"id": "book-simulator",
 	"name": "Book Simulator",
-	"version": "1.0.0",
+	"version": "0.1.1",
 	"minAppVersion": "0.15.0",
-	"description": "Simulates a book view by combining multiple notes from a folder into a continuous reading experience.",
-	"author": "tu2-atmanand",
+	"description": "Simulates a book view by combining multiple notes from the folder hierarchy into a continuous reading experience. View, edit and export the virtual view as note or PDF.",
+	"author": "tu2-atmanand and AE-SAY-WAY",
 	"authorUrl": "https://github.com/tu2-atmanand",
 	"isDesktopOnly": false
 }

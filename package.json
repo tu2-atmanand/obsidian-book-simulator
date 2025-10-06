@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-book-simulator",
-	"version": "1.0.0",
+	"version": "0.1.1",
 	"description": "Simulates a book view by combining multiple notes from a folder into a continuous reading experience",
 	"main": "main.js",
 	"scripts": {
@@ -8,7 +8,13 @@
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
-	"keywords": ["obsidian", "plugin", "book", "reading", "notes"],
+	"keywords": [
+		"obsidian",
+		"plugin",
+		"book",
+		"reading",
+		"notes"
+	],
 	"author": "tu2-atmanand",
 	"license": "MIT",
 	"devDependencies": {

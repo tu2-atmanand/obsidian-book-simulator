@@ -1,6 +1,6 @@
 # Obsidian Book Simulator
 
-A plugin for Obsidian (https://obsidian.md) that simulates a book view by combining multiple notes from a folder into a continuous reading experience.
+A plugin for Obsidian (https://obsidian.md) that simulates a book view by combining multiple notes from a folder into a continuous reading experience. It uses the hierarchy of the folder to structure the chapters and sections of the book.
 
 ## Features
 
@@ -80,9 +80,9 @@ src/
 
 ## License
 
-MIT
+GPL v3
 
 ## Support
 
-If you find this plugin helpful, consider supporting its development!
+If you find this plugin helpful, consider supporting its development by making a donation!
 
