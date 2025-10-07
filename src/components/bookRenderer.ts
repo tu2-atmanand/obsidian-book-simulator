@@ -157,6 +157,8 @@ export class BookRenderer {
 			// Split markdown into chunks
 			this.markdownChunks = splitMarkdownIntoChunks(this.fullMarkdown, 100);
 			this.currentChunkIndex = 0;
+			
+			console.log(`Lazy loading: Split markdown into ${this.markdownChunks.length} chunks (${this.fullMarkdown.split('\n').length} lines total)`);
 
 			// Render first chunk
 			await this.renderNextChunk();
@@ -184,6 +186,7 @@ export class BookRenderer {
 		}
 
 		this.isLoadingMore = true;
+		console.log(`Lazy loading: Rendering chunk ${this.currentChunkIndex + 1}/${this.markdownChunks.length}`);
 
 		try {
 			const chunk = this.markdownChunks[this.currentChunkIndex];
