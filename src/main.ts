@@ -83,4 +83,96 @@ export default class BookSimulatorPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
+
+	// set by folder element
+	private async setByFolderElement(folderItemEl: Element) {
+		let folderPath = "";
+		let folderName = "";
+
+		const className = folderItemEl.className.toString();
+		let folderElem = folderItemEl;
+		if (className.contains("nav-folder-title-content")) {
+			folderName = folderElem.getText();
+			if (folderItemEl.parentElement) {
+				folderElem = folderItemEl.parentElement;
+				if (
+					folderElem.attributes.getNamedItem("data-path")?.textContent
+				)
+					folderPath =
+						folderElem.attributes.getNamedItem("data-path")
+							?.textContent ?? "";
+				// console.log("setByFolderElement : data-path : folderPth :", folderPath);
+			}
+		} else if (className.contains("nav-folder-title")) {
+			folderPath =
+				folderItemEl.attributes.getNamedItem("data-path")
+					?.textContent ?? "";
+			folderName = folderItemEl.lastElementChild?.getText() ?? "";
+		}
+
+		// fix the folder path
+		if (folderPath.length > 0) {
+			const slashLast = folderPath.lastIndexOf("/");
+			const folderPathLast = folderPath.split("/").pop();
+			if (folderPathLast != folderName) {
+				folderPath =
+					folderPath.substring(0, slashLast + 1) + folderName;
+			}
+		}
+
+		return this.app.vault.getAbstractFileByPath(folderPath);
+	}
+
+	/**
+	 * Update all existing BookSimulatorView instances with new folder selection
+	 */
+	private updateExistingViews(folder: TFolder) {
+		const leaves = this.app.workspace.getLeavesOfType(
+			VIEW_TYPE_BOOK_SIMULATOR
+		);
+		leaves.forEach((leaf) => {
+			const view = leaf.view;
+			if (view instanceof BookSimulatorView) {
+				view.updateSelectedFolder(folder);
+			}
+		});
+	}
+
+	private async registerPluginEvents() {
+		if (this.settings.openViewOnFolderClick) {
+			this.registerDomEvent(
+				document,
+				"click",
+				async (evt: MouseEvent) => {
+					console.log("CLick event is triggered...");
+
+					// Event to open the Cards View on Folder click, just like Folder Notes plugin
+					const elemTarget = evt.target as Element;
+					const Tfolder = await this.setByFolderElement(elemTarget);
+
+					// open it
+					if (Tfolder && Tfolder instanceof TFolder) {
+						this.selectedFolder = Tfolder;
+
+						// Update existing views with new folder
+						this.updateExistingViews(Tfolder);
+
+						console.log(
+							"Saved following folder in the selectedFolder :",
+							this.selectedFolder
+						);
+
+						this.activateView();
+					}
+				}
+			);
+		}
+	}
+
+	public saveSelectedFolderInHistory() {
+		this.settings.lastSelectedFolder = this.selectedFolder
+			? this.selectedFolder?.path
+			: "";
+		this.saveSettings();
+	}
 }
