@@ -1,6 +1,7 @@
 import { App, Component, MarkdownRenderer, Notice, TFolder } from "obsidian";
 import { FileTreeItem } from "../types";
 import { generateHierarchyMarkdown } from "../utils/hierarchyGenerator";
+import { splitMarkdownIntoChunks, isNearBottom } from "../utils/lazyLoadUtils";
 
 /**
  * Component that renders a book view from a folder's notes
@@ -13,6 +14,13 @@ export class BookRenderer {
 	private headerEl: HTMLElement;
 	private renderComponent: Component | null = null;
 	private isLoading = false;
+	
+	// Lazy loading properties
+	private fullMarkdown = "";
+	private markdownChunks: string[] = [];
+	private currentChunkIndex = 0;
+	private isLoadingMore = false;
+	private scrollListener: ((e: Event) => void) | null = null;
 
 	constructor(
 		container: HTMLElement,
@@ -112,6 +120,12 @@ export class BookRenderer {
 			this.renderComponent.unload();
 			this.renderComponent = null;
 		}
+		
+		// Remove old scroll listener if exists
+		if (this.scrollListener) {
+			this.contentContainer.removeEventListener('scroll', this.scrollListener);
+			this.scrollListener = null;
+		}
 
 		if (!this.folder) {
 			const emptyState = this.contentContainer.createDiv({
@@ -130,8 +144,8 @@ export class BookRenderer {
 		loadingEl.textContent = "Loading book content...";
 
 		try {
-			// Generate markdown
-			const markdown = await generateHierarchyMarkdown(
+			// Generate full markdown
+			this.fullMarkdown = await generateHierarchyMarkdown(
 				this.app,
 				this.folder
 			);
@@ -140,17 +154,15 @@ export class BookRenderer {
 			this.contentContainer.empty();
 			this.isLoading = false;
 
-			// Render markdown using Obsidian's API
-			this.renderComponent = new Component();
-			this.renderComponent.load();
+			// Split markdown into chunks
+			this.markdownChunks = splitMarkdownIntoChunks(this.fullMarkdown, 100);
+			this.currentChunkIndex = 0;
 
-			await MarkdownRenderer.render(
-				this.app,
-				markdown,
-				this.contentContainer,
-				"",
-				this.renderComponent
-			);
+			// Render first chunk
+			await this.renderNextChunk();
+			
+			// Setup scroll listener for lazy loading
+			this.setupScrollListener();
 		} catch (error) {
 			console.error("Error rendering book:", error);
 			this.contentContainer.empty();
@@ -162,7 +174,80 @@ export class BookRenderer {
 		}
 	}
 
+	/**
+	 * Renders the next chunk of markdown content
+	 * Appends to existing content without re-rendering
+	 */
+	private async renderNextChunk() {
+		if (this.currentChunkIndex >= this.markdownChunks.length || this.isLoadingMore) {
+			return;
+		}
+
+		this.isLoadingMore = true;
+
+		try {
+			const chunk = this.markdownChunks[this.currentChunkIndex];
+			
+			// Create a temporary container for the new chunk
+			const chunkContainer = this.contentContainer.createDiv({
+				cls: "book-simulator-chunk",
+			});
+
+			// Create a new component for this chunk
+			const chunkComponent = new Component();
+			chunkComponent.load();
+
+			// Render the chunk
+			await MarkdownRenderer.render(
+				this.app,
+				chunk,
+				chunkContainer,
+				"",
+				chunkComponent
+			);
+
+			// Store the component reference (we'll need to unload all later)
+			if (!this.renderComponent) {
+				this.renderComponent = new Component();
+				this.renderComponent.load();
+			}
+			this.renderComponent.addChild(chunkComponent);
+
+			this.currentChunkIndex++;
+		} catch (error) {
+			console.error("Error rendering chunk:", error);
+		} finally {
+			this.isLoadingMore = false;
+		}
+	}
+
+	/**
+	 * Sets up scroll listener for lazy loading more content
+	 */
+	private setupScrollListener() {
+		this.scrollListener = async (e: Event) => {
+			if (this.isLoadingMore) {
+				return;
+			}
+
+			const container = e.target as HTMLElement;
+			if (isNearBottom(container, 500)) {
+				if (this.currentChunkIndex < this.markdownChunks.length) {
+					await this.renderNextChunk();
+				}
+			}
+		};
+
+		this.contentContainer.addEventListener('scroll', this.scrollListener);
+	}
+
 	destroy() {
+		// Remove scroll listener
+		if (this.scrollListener) {
+			this.contentContainer?.removeEventListener('scroll', this.scrollListener);
+			this.scrollListener = null;
+		}
+		
 		if (this.renderComponent) {
 			this.renderComponent.unload();
 			this.renderComponent = null;

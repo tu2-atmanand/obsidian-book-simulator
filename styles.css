@@ -245,3 +245,17 @@ Book Simulator Plugin Styles
 .recent-views-panel-toggle-btn:hover {
 	opacity: 1;
 }
+
+/* Lazy loading chunk styling */
+.book-simulator-chunk {
+	/* Ensure smooth rendering of chunks */
+	margin: 0;
+	padding: 0;
+}
+
+.book-simulator-chunk:not(:first-child) {
+	/* Add subtle separation between chunks for debugging (can be removed) */
+	/* border-top: 1px dashed var(--background-modifier-border); */
+	/* padding-top: 1em; */
+}
+
