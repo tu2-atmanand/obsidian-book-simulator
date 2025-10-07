@@ -36,6 +36,11 @@ export default class BookSimulatorPlugin extends Plugin {
 						.setTitle('Open in Book Simulator')
 						.setIcon('book-open')
 						.onClick(() => {
+								if (file instanceof TFolder) {
+									this.selectedFolder = file;
+									this.saveSelectedFolderInHistory();
+									// Update existing views with new folder
+									this.updateExistingViews(file);
 							this.activateView();
 						});
 				});
