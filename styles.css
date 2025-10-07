@@ -17,6 +17,7 @@ Book Simulator Plugin Styles
 }
 
 /* File Explorer Panel */
+.book-simulator-recent-views-panel,
 .book-simulator-explorer-panel {
 	width: 20%;
 	min-width: 200px;
@@ -24,6 +25,53 @@ Book Simulator Plugin Styles
 	overflow: hidden;
 	border-right: 1px solid var(--background-modifier-border);
 	background-color: var(--background-secondary);
+	transition: width 0.3s ease-in-out, min-width 0.3s ease-in-out;
+}
+
+/* Panel animation states */
+.book-simulator-recent-views-panel.collapsed {
+	width: 0%;
+	min-width: 0;
+	border-right: none;
+	overflow: hidden;
+}
+
+.book-simulator-recent-views-panel.expanding {
+	animation: expandPanel 0.3s ease-out forwards;
+	overflow: hidden;
+}
+
+.book-simulator-recent-views-panel.collapsing {
+	animation: collapsePanel 0.2s ease-in forwards;
+	overflow: hidden;
+}
+
+@keyframes expandPanel {
+	from {
+		width: 0%;
+		min-width: 0;
+		opacity: 0;
+	}
+
+	to {
+		width: 20%;
+		min-width: 200px;
+		opacity: 1;
+	}
+}
+
+@keyframes collapsePanel {
+	from {
+		width: 20%;
+		min-width: 200px;
+		opacity: 1;
+	}
+
+	to {
+		width: 0%;
+		min-width: 0;
+		opacity: 0;
+	}
 }
 
 .book-simulator-explorer {
@@ -99,10 +147,11 @@ Book Simulator Plugin Styles
 
 /* Book Renderer Panel */
 .book-simulator-renderer-panel {
-	width: 80%;
+	flex: 1;
 	height: 100%;
 	overflow: hidden;
 	background-color: var(--background-primary);
+	transition: flex 0.3s ease-in-out;
 }
 
 .book-simulator-renderer {
@@ -118,6 +167,9 @@ Book Simulator Plugin Styles
 	font-size: 16px;
 	font-weight: bold;
 	color: var(--text-normal);
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
 }
 
 .book-simulator-renderer-content {
@@ -182,4 +234,14 @@ Book Simulator Plugin Styles
 .book-simulator-renderer-content ul,
 .book-simulator-renderer-content ol {
 	margin-bottom: 1em;
+}
+
+/* Toggle button styling */
+.recent-views-panel-toggle-btn {
+	opacity: 0.7;
+	transition: opacity 0.2s ease;
+}
+
+.recent-views-panel-toggle-btn:hover {
+	opacity: 1;
 }
