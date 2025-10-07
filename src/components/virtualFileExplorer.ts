@@ -95,18 +95,15 @@ export class VirtualFileExplorer {
 				cls: "book-simulator-tree-expand-icon",
 			});
 			expandIcon.textContent = isExpanded ? "▼" : "▶";
-			expandIcon.style.cursor = "pointer";
-			expandIcon.style.marginRight = "4px";
 			expandIcon.addEventListener("click", (e) => {
 				e.stopPropagation();
 				this.toggleExpanded(item.path);
 			});
 		} else if (isFolder) {
 			// Empty folder - add spacing
-			const spacer = itemEl.createSpan({
+			itemEl.createSpan({
 				cls: "book-simulator-tree-spacer",
 			});
-			spacer.style.marginRight = "16px";
 		}
 
 		const icon = itemEl.createSpan({
@@ -125,7 +122,6 @@ export class VirtualFileExplorer {
 		name.textContent = item.path === "/" ? "Vault" : item.name;
 
 		if (isFolder) {
-			itemEl.style.cursor = "pointer";
 			itemEl.addEventListener("click", (e) => {
 				if (item.path === "/") return;
 

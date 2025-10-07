@@ -71,6 +71,8 @@ Book Simulator Plugin Styles
 	width: 12px;
 	text-align: center;
 	transition: color 0.1s;
+	cursor: pointer;
+	margin-right: 4px;
 }
 
 .book-simulator-tree-expand-icon:hover {
@@ -79,6 +81,7 @@ Book Simulator Plugin Styles
 
 .book-simulator-tree-spacer {
 	width: 12px;
+	margin-right: 16px;
 }
 
 .book-simulator-tree-icon {
@@ -91,6 +94,7 @@ Book Simulator Plugin Styles
 .book-simulator-tree-name {
 	font-size: 13px;
 	color: var(--text-normal);
+	cursor: pointer;
 }
 
 /* Book Renderer Panel */
@@ -179,4 +183,3 @@ Book Simulator Plugin Styles
 .book-simulator-renderer-content ol {
 	margin-bottom: 1em;
 }
-
