@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-book-simulator",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Simulates a book view by combining multiple notes from a folder into a continuous reading experience",
 	"main": "main.js",
 	"scripts": {
