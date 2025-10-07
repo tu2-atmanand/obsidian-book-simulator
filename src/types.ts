@@ -11,10 +11,12 @@ export interface FolderInfo {
 
 export interface BookSimulatorSettings {
 	lastSelectedFolder: string;
+	openViewOnFolderClick: boolean;
 }
 
 export const DEFAULT_SETTINGS: BookSimulatorSettings = {
-	lastSelectedFolder: '/'
+	lastSelectedFolder: "",
+	openViewOnFolderClick: false,
 };
 
-export const VIEW_TYPE_BOOK_SIMULATOR = 'book-simulator-view';
+export const VIEW_TYPE_BOOK_SIMULATOR = "book-simulator-view";

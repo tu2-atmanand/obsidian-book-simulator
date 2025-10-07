@@ -1,51 +1,63 @@
-import { Plugin, WorkspaceLeaf } from 'obsidian';
-import { BookSimulatorView } from './views/bookSimulatorView';
-import { VIEW_TYPE_BOOK_SIMULATOR, BookSimulatorSettings, DEFAULT_SETTINGS } from './types';
+import { Plugin, TFolder, WorkspaceLeaf } from "obsidian";
+import { BookSimulatorView } from "./views/bookSimulatorView";
+import {
+	VIEW_TYPE_BOOK_SIMULATOR,
+	BookSimulatorSettings,
+	DEFAULT_SETTINGS,
+	FileTreeItem,
+} from "./types";
+import { BookSimulatorSettingsTab } from "./settings/settingsTab";
 
 export default class BookSimulatorPlugin extends Plugin {
 	settings: BookSimulatorSettings;
+	selectedFolder: TFolder | FileTreeItem;
 
 	async onload() {
 		await this.loadSettings();
+		this.addSettingTab(new BookSimulatorSettingsTab(this.app, this));
 
-		// Register the custom view
-		this.registerView(
-			VIEW_TYPE_BOOK_SIMULATOR,
-			(leaf) => new BookSimulatorView(leaf)
-		);
+		// Register events and commands only on Layout is ready
+		this.app.workspace.onLayoutReady(async () => {
+			await this.registerPluginEvents();
+			// Register the custom view
+			this.registerView(
+				VIEW_TYPE_BOOK_SIMULATOR,
+				(leaf) => new BookSimulatorView(this, leaf, this.selectedFolder)
+			);
 
-		// Add ribbon icon to open the view
-		this.addRibbonIcon('book-open', 'Open Book Simulator', () => {
-			this.activateView();
-		});
-
-		// Add command to open the view
-		this.addCommand({
-			id: 'open-book-simulator',
-			name: 'Open book composer view',
-			callback: () => {
+			// Add ribbon icon to open the view
+			this.addRibbonIcon("book-open", "Open Book Simulator", () => {
 				this.activateView();
-			}
-		});
+			});
 
-		// Add command to the file menu
-		this.registerEvent(
-			this.app.workspace.on('file-menu', (menu, file) => {
-				menu.addItem((item) => {
-					item
-						.setTitle('Open in Book Simulator')
-						.setIcon('book-open')
-						.onClick(() => {
+			// Add command to open the view
+			this.addCommand({
+				id: "open-book-simulator",
+				name: "Open book composer view",
+				callback: () => {
+					this.activateView();
+				},
+			});
+
+			// Add command to the file menu
+			this.registerEvent(
+				this.app.workspace.on("file-menu", (menu, file) => {
+					menu.addItem((item) => {
+						item.setTitle("Open in Book Simulator")
+							.setIcon("book-open")
+							.onClick(() => {
 								if (file instanceof TFolder) {
 									this.selectedFolder = file;
 									this.saveSelectedFolderInHistory();
 									// Update existing views with new folder
 									this.updateExistingViews(file);
-							this.activateView();
-						});
-				});
-			})
-		);
+									this.activateView();
+								}
+							});
+					});
+				})
+			);
+		});
 	}
 
 	onunload() {
@@ -82,7 +94,12 @@ export default class BookSimulatorPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData()
+		);
+		this.saveSettings();
 	}
 
 	async saveSettings() {
