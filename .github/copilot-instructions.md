@@ -59,6 +59,25 @@ npm run build        # Production build (minified, no sourcemaps)
 - Add CSS classes with `book-simulator-` prefix for styling
 - Always call `destroy()` method for cleanup (especially MarkdownRenderer components)
 
+### Panel Toggle Pattern
+Views can implement collapsible panels with smooth animations:
+- Store panel container as class property for manipulation
+- Use CSS animations with `expanding`/`collapsing`/`collapsed` classes
+- Implement toggle methods with setTimeout for proper class management
+- Update button tooltips and states for better UX
+
+### View Update Pattern
+When external folder selection changes (e.g., user clicks folder in Obsidian explorer):
+1. Plugin updates `selectedFolder` property
+2. Plugin calls `updateExistingViews()` to notify all open BookSimulatorView instances
+3. Views call `updateSelectedFolder()` method which converts TFolder to FileTreeItem
+4. BookRenderer refreshes content automatically via `setFolder()` and `renderBook()`
+
+### Type Conversion Pattern
+- `TFolder` (Obsidian native) ↔ `FileTreeItem` (plugin internal)
+- Conversion happens in constructors and setters to maintain clean interfaces
+- Always handle both types in component methods that accept folder parameters
+
 ### Error Handling Pattern
 ```typescript
 try {
