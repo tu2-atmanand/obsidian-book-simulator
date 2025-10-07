@@ -45,7 +45,7 @@ export default class BookSimulatorPlugin extends Plugin {
 
 	onunload() {
 		// Detach all leaves of this view type
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_BOOK_SIMULATOR);
+		// this.app.workspace.detachLeavesOfType(VIEW_TYPE_BOOK_SIMULATOR);
 	}
 
 	async activateView() {
