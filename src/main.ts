@@ -22,7 +22,7 @@ export default class BookSimulatorPlugin extends Plugin {
 		// Add command to open the view
 		this.addCommand({
 			id: 'open-book-simulator',
-			name: 'Open Book Simulator',
+			name: 'Open book composer view',
 			callback: () => {
 				this.activateView();
 			}
