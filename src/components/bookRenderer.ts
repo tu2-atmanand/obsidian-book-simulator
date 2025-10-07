@@ -1,4 +1,4 @@
-import { App, Component, MarkdownRenderer } from "obsidian";
+import { App, Component, MarkdownRenderer, Notice, TFolder } from "obsidian";
 import { FileTreeItem } from "../types";
 import { generateHierarchyMarkdown } from "../utils/hierarchyGenerator";
 
@@ -14,15 +14,50 @@ export class BookRenderer {
 	private renderComponent: Component | null = null;
 	private isLoading = false;
 
-	constructor(container: HTMLElement, app: App) {
+	constructor(
+		container: HTMLElement,
+		app: App,
+		selectedFolder: FileTreeItem | TFolder | null
+	) {
 		this.container = container;
 		this.app = app;
+
+		// Convert TFolder to FileTreeItem if needed
+		if (
+			selectedFolder &&
+			"children" in selectedFolder &&
+			!Array.isArray(selectedFolder.children)
+		) {
+			// It's a TFolder, convert to FileTreeItem
+			this.folder = {
+				name: selectedFolder.name,
+				path: selectedFolder.path,
+				children: [], // We don't need the full tree structure for rendering
+			};
+		} else {
+			// It's already a FileTreeItem or null
+			this.folder = selectedFolder as FileTreeItem | null;
+		}
+
 		console.log("Folder received for rendering :", this.folder);
 		this.render();
 	}
 
-	setFolder(folder: FileTreeItem | null) {
-		this.folder = folder;
+	setFolder(folder: FileTreeItem | TFolder | null) {
+		if (!folder) {
+			this.folder = null;
+		} else if ("children" in folder && !Array.isArray(folder.children)) {
+			// It's a TFolder, convert to FileTreeItem
+			this.folder = {
+				name: folder.name,
+				path: folder.path,
+				children: [], // We don't need the full tree structure for rendering
+			};
+		} else {
+			// It's already a FileTreeItem
+			this.folder = folder as FileTreeItem;
+		}
+		// this.renderBook();
 		this.render();
 	}
 
@@ -60,6 +95,15 @@ export class BookRenderer {
 		} else {
 			this.headerEl.textContent = "Book Simulator";
 		}
+
+		this.headerEl
+			.createEl("button", {
+				cls: "book-simulator-renderer-header-save-snap-btn",
+				text: "Save snapshot",
+			})
+			.addEventListener("click", (ev: PointerEvent) => {
+				new Notice("Feature under development.");
+			});
 
 		// Clear content
 		this.contentContainer.empty();
