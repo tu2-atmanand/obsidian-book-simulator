@@ -1,7 +1,15 @@
-import { App, Component, MarkdownRenderer, Notice, TFolder } from "obsidian";
+import {
+	App,
+	Component,
+	MarkdownRenderer,
+	Notice,
+	TFolder,
+	TFile,
+} from "obsidian";
 import { FileTreeItem } from "../types";
 import { generateHierarchyMarkdown } from "../utils/hierarchyGenerator";
 import { splitMarkdownIntoChunks, isNearBottom } from "../utils/lazyLoadUtils";
+import { SnapshotNameModal } from "./snapshotNameModal";
 
 /**
  * Component that renders a book view from a folder's notes
@@ -14,21 +22,24 @@ export class BookRenderer {
 	private headerEl: HTMLElement;
 	private renderComponent: Component | null = null;
 	private isLoading = false;
-	
+
 	// Lazy loading properties
 	private fullMarkdown = "";
 	private markdownChunks: string[] = [];
 	private currentChunkIndex = 0;
 	private isLoadingMore = false;
+	private refreshLeftPanel: () => void;
 	private scrollListener: ((e: Event) => void) | null = null;
 
 	constructor(
 		container: HTMLElement,
 		app: App,
-		selectedFolder: FileTreeItem | TFolder | null
+		selectedFolder: FileTreeItem | TFolder | null,
+		refreshLeftPanel: () => void
 	) {
-		this.container = container;
 		this.app = app;
+		this.container = container;
+		this.refreshLeftPanel = refreshLeftPanel;
 
 		// Convert TFolder to FileTreeItem if needed
 		if (
@@ -110,7 +121,7 @@ export class BookRenderer {
 				text: "Save snapshot",
 			})
 			.addEventListener("click", (ev: PointerEvent) => {
-				new Notice("Feature under development.");
+				this.openSnapshotModal();
 			});
 
 		// Clear content
@@ -120,10 +131,13 @@ export class BookRenderer {
 			this.renderComponent.unload();
 			this.renderComponent = null;
 		}
-		
+
 		// Remove old scroll listener if exists
 		if (this.scrollListener) {
-			this.contentContainer.removeEventListener('scroll', this.scrollListener);
+			this.contentContainer.removeEventListener(
+				"scroll",
+				this.scrollListener
+			);
 			this.scrollListener = null;
 		}
 
@@ -155,14 +169,21 @@ export class BookRenderer {
 			this.isLoading = false;
 
 			// Split markdown into chunks
-			this.markdownChunks = splitMarkdownIntoChunks(this.fullMarkdown, 100);
+			this.markdownChunks = splitMarkdownIntoChunks(
+				this.fullMarkdown,
+				100
+			);
 			this.currentChunkIndex = 0;
-			
-			console.log(`Lazy loading: Split markdown into ${this.markdownChunks.length} chunks (${this.fullMarkdown.split('\n').length} lines total)`);
+
+			console.log(
+				`Lazy loading: Split markdown into ${
+					this.markdownChunks.length
+				} chunks (${this.fullMarkdown.split("\n").length} lines total)`
+			);
 
 			// Render first chunk
 			await this.renderNextChunk();
-			
+
 			// Setup scroll listener for lazy loading
 			this.setupScrollListener();
 		} catch (error) {
@@ -181,16 +202,23 @@ export class BookRenderer {
 	 * Appends to existing content without re-rendering
 	 */
 	private async renderNextChunk() {
-		if (this.currentChunkIndex >= this.markdownChunks.length || this.isLoadingMore) {
+		if (
+			this.currentChunkIndex >= this.markdownChunks.length ||
+			this.isLoadingMore
+		) {
 			return;
 		}
 
 		this.isLoadingMore = true;
-		console.log(`Lazy loading: Rendering chunk ${this.currentChunkIndex + 1}/${this.markdownChunks.length}`);
+		console.log(
+			`Lazy loading: Rendering chunk ${this.currentChunkIndex + 1}/${
+				this.markdownChunks.length
+			}`
+		);
 
 		try {
 			const chunk = this.markdownChunks[this.currentChunkIndex];
-			
+
 			// Create a temporary container for the new chunk
 			const chunkContainer = this.contentContainer.createDiv({
 				cls: "book-simulator-chunk",
@@ -241,16 +269,205 @@ export class BookRenderer {
 			}
 		};
 
-		this.contentContainer.addEventListener('scroll', this.scrollListener);
+		this.contentContainer.addEventListener("scroll", this.scrollListener);
+	}
+
+	/**
+	 * Opens the snapshot name modal
+	 */
+	private openSnapshotModal() {
+		if (!this.fullMarkdown) {
+			new Notice("No content to save as snapshot");
+			return;
+		}
+
+		const modal = new SnapshotNameModal(this.app, (name) => {
+			this.saveSnapshot(name);
+		});
+		modal.open();
+	}
+
+	/**
+	 * Saves the current content as a snapshot
+	 */
+	private async saveSnapshot(name: string) {
+		try {
+			// Ensure the snapshots folder exists
+			const snapshotsFolder = "bookSimulatorSnapshots";
+			const folder =
+				this.app.vault.getAbstractFileByPath(snapshotsFolder);
+
+			if (!folder) {
+				await this.app.vault.createFolder(snapshotsFolder);
+			}
+
+			// Create the snapshot file
+			const fileName = `${name}.md`;
+			const filePath = `${snapshotsFolder}/${fileName}`;
+
+			// Check if file already exists
+			const existingFile = this.app.vault.getAbstractFileByPath(filePath);
+			if (existingFile) {
+				new Notice(
+					`Snapshot "${name}" already exists. Please choose a different name.`
+				);
+				return;
+			}
+
+			// Create the snapshot with metadata header
+			const snapshotContent = this.generateSnapshotContent(name);
+
+			await this.app.vault.create(filePath, snapshotContent);
+			new Notice(`Snapshot "${name}" saved successfully!`);
+			this.refreshLeftPanel();
+		} catch (error) {
+			console.error("Error saving snapshot:", error);
+			new Notice(`Error saving snapshot: ${error.message}`);
+		}
+	}
+
+	/**
+	 * Opens and displays a snapshot file
+	 */
+	async openSnapshot(snapshotPath: string) {
+		try {
+			const file = this.app.vault.getAbstractFileByPath(snapshotPath);
+			if (!file || !(file instanceof TFile)) {
+				new Notice("Snapshot file not found");
+				return;
+			}
+
+			const content = await this.app.vault.read(file as TFile);
+
+			// Extract the actual markdown content (after the frontmatter)
+			const frontmatterRegex = /^---\n[\s\S]*?\n---\n/;
+			const markdownContent = content
+				.replace(frontmatterRegex, "")
+				.trim();
+
+			// Set up the renderer for snapshot mode
+			this.folder = {
+				name: (file as TFile).basename,
+				path: snapshotPath,
+				children: [],
+			};
+
+			this.fullMarkdown = markdownContent;
+
+			// Render the snapshot
+			this.renderSnapshotContent();
+		} catch (error) {
+			console.error("Error opening snapshot:", error);
+			new Notice(`Error opening snapshot: ${error.message}`);
+		}
+	}
+
+	/**
+	 * Renders snapshot content directly without lazy loading
+	 */
+	private async renderSnapshotContent() {
+		this.container.empty();
+		this.container.addClass("book-simulator-renderer");
+
+		this.headerEl = this.container.createDiv({
+			cls: "book-simulator-renderer-header",
+		});
+
+		this.contentContainer = this.container.createDiv({
+			cls: "book-simulator-renderer-content markdown-reading-view",
+		});
+
+		// Update header for snapshot
+		if (this.folder) {
+			this.headerEl.textContent = this.folder.name;
+		}
+
+		// Add snapshot indicator
+		this.headerEl.createDiv({
+			cls: "book-simulator-snapshot-indicator",
+			text: "📄 Snapshot",
+		});
+
+		// Clear content and remove old scroll listener
+		this.contentContainer.empty();
+		if (this.renderComponent) {
+			this.renderComponent.unload();
+			this.renderComponent = null;
+		}
+
+		if (this.scrollListener) {
+			this.contentContainer.removeEventListener(
+				"scroll",
+				this.scrollListener
+			);
+			this.scrollListener = null;
+		}
+
+		// Show loading state
+		this.isLoading = true;
+		const loadingEl = this.contentContainer.createDiv({
+			cls: "book-simulator-loading",
+		});
+		loadingEl.textContent = "Loading book content...";
+
+		try {
+			// Clear loading
+			this.contentContainer.empty();
+			this.isLoading = false;
+
+			// Split markdown into chunks
+			this.markdownChunks = splitMarkdownIntoChunks(
+				this.fullMarkdown,
+				100
+			);
+			this.currentChunkIndex = 0;
+
+			console.log(
+				`Lazy loading: Split markdown into ${
+					this.markdownChunks.length
+				} chunks (${this.fullMarkdown.split("\n").length} lines total)`
+			);
+
+			// Render first chunk
+			await this.renderNextChunk();
+
+			// Setup scroll listener for lazy loading
+			this.setupScrollListener();
+		} catch (error) {
+			console.error("Error rendering snapshot:", error);
+			this.contentContainer.empty();
+			this.isLoading = false;
+			const errorEl = this.contentContainer.createDiv({
+				cls: "book-simulator-error",
+			});
+			errorEl.textContent = `Error rendering book: ${error.message}`;
+		}
+	}
+
+	/**
+	 * Generates the content for the snapshot file
+	 */
+	private generateSnapshotContent(name: string): string {
+		const now = new Date();
+		const timestamp = now.toISOString();
+		const folderName = this.folder?.name || "Unknown";
+		const folderPath = this.folder?.path || "";
+
+		const header = `---\n  snapshot_name: ${name}\n  created_date: ${timestamp}\n  source_folder: ${folderName}\n  source_path: ${folderPath}\n---\n\n`;
+
+		return header + this.fullMarkdown;
 	}
 
 	destroy() {
 		// Remove scroll listener
 		if (this.scrollListener) {
-			this.contentContainer?.removeEventListener('scroll', this.scrollListener);
+			this.contentContainer?.removeEventListener(
+				"scroll",
+				this.scrollListener
+			);
 			this.scrollListener = null;
 		}
-		
+
 		if (this.renderComponent) {
 			this.renderComponent.unload();
 			this.renderComponent = null;
