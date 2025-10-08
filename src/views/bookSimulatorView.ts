@@ -1,5 +1,10 @@
-import { ItemView, TFolder, WorkspaceLeaf } from "obsidian";
-import { VIEW_TYPE_BOOK_SIMULATOR, FileTreeItem } from "../types";
+import { ItemView, Menu, TFolder, WorkspaceLeaf } from "obsidian";
+import {
+	VIEW_TYPE_BOOK_SIMULATOR,
+	FileTreeItem,
+	viewTypeConfigs,
+	paginatedViewTypeConfigs,
+} from "../types";
 import { BookRenderer } from "../components/bookRenderer";
 // import { buildFileTree } from "../utils/fileTreeUtils";
 import type BookSimulatorPlugin from "src/main";
@@ -48,6 +53,10 @@ export class BookSimulatorView extends ItemView {
 			}
 		);
 		this.toggleButton.addClass("recent-views-panel-toggle-btn");
+
+		this.addAction("settings-2", "Configure view", (event) => {
+			this.openViewFilterMenu(event);
+		});
 
 		const container = this.containerEl.children[1];
 		container.empty();
@@ -209,5 +218,134 @@ export class BookSimulatorView extends ItemView {
 				this.recentViewsContainer?.addClass("collapsed");
 			}, 300);
 		}
+	}
+
+	private openViewFilterMenu(event: MouseEvent) {
+		const sortMenu = new Menu();
+
+		sortMenu.addItem((item) => {
+			item.setTitle("View type");
+			item.setIcon("clock-arrow-down");
+			item.setIsLabel(true);
+		});
+		sortMenu.addItem((item) => {
+			item.setTitle("Infinite scroll");
+			item.setIcon("scroll-text");
+			item.setChecked(
+				this.plugin.settings.history.viewType ===
+					viewTypeConfigs.infiniteView
+			);
+			item.onClick(async () => {
+				// Call here function to switch the view.
+				this.plugin.settings.history.viewType =
+					viewTypeConfigs.infiniteView;
+				this.plugin.saveSettings();
+			});
+			// item.checked =
+			// 	this.plugin.settings.history.viewType ===
+			// 	viewTypeConfigs.infiniteView;
+		});
+		sortMenu.addItem((item) => {
+			item.setTitle("Paginated");
+			item.setIcon("book-open");
+			item.setChecked(
+				this.plugin.settings.history.viewType ===
+					viewTypeConfigs.pageView
+			);
+			item.onClick(async () => {
+				// Call here function to switch the view.
+				this.plugin.settings.history.viewType =
+					viewTypeConfigs.pageView;
+				this.plugin.saveSettings();
+			});
+			// item.checked =
+			// 	this.plugin.settings.history.viewType ===
+			// 	viewTypeConfigs.pageView;
+		});
+
+		sortMenu.addSeparator();
+
+		sortMenu.addItem((item) => {
+			item.setTitle("Paginated view filters");
+			item.setIcon("book-open");
+			item.setIsLabel(true);
+			item.setDisabled(
+				this.plugin.settings.history.viewType !==
+					viewTypeConfigs.pageView
+			);
+		});
+		sortMenu.addItem((item) => {
+			item.setTitle("Contineous scroll");
+			item.setIcon("gallery-vertical");
+			item.setChecked(
+				this.plugin.settings.history.paginatedViewType ===
+					paginatedViewTypeConfigs.contineousScroll
+			);
+			item.onClick(async () => {
+				// Call here function to switch the paginated view mode.
+				this.plugin.settings.history.paginatedViewType =
+					paginatedViewTypeConfigs.contineousScroll;
+				this.plugin.saveSettings();
+			});
+			item.setDisabled(
+				this.plugin.settings.history.viewType !==
+					viewTypeConfigs.pageView
+			);
+		});
+		sortMenu.addItem((item) => {
+			item.setTitle("Single page");
+			item.setIcon("file");
+			item.setChecked(
+				this.plugin.settings.history.paginatedViewType ===
+					paginatedViewTypeConfigs.singlePage
+			);
+			item.onClick(async () => {
+				// Call here function to switch the paginated view mode.
+				this.plugin.settings.history.paginatedViewType =
+					paginatedViewTypeConfigs.singlePage;
+				this.plugin.saveSettings();
+			});
+			item.setDisabled(
+				this.plugin.settings.history.viewType !==
+					viewTypeConfigs.pageView
+			);
+		});
+		sortMenu.addItem((item) => {
+			item.setTitle("Two pages");
+			item.setIcon("flip-horizontal");
+			item.setChecked(
+				this.plugin.settings.history.paginatedViewType ===
+					paginatedViewTypeConfigs.twoPages
+			);
+			item.onClick(async () => {
+				// Call here function to switch the paginated view mode.
+				this.plugin.settings.history.paginatedViewType =
+					paginatedViewTypeConfigs.twoPages;
+				this.plugin.saveSettings();
+			});
+			item.setDisabled(
+				this.plugin.settings.history.viewType !==
+					viewTypeConfigs.pageView
+			);
+		});
+		sortMenu.addItem((item) => {
+			item.setTitle("Show header-footer");
+			item.setIcon("panel-top-bottom-dashed");
+			item.setChecked(
+				this.plugin.settings.history.showHeaderFooter == true
+			);
+			item.onClick(async () => {
+				// Call here function to render the footer and header inside the page.
+				this.plugin.settings.history.showHeaderFooter =
+					!this.plugin.settings.history.showHeaderFooter;
+				this.plugin.saveSettings();
+			});
+			item.setDisabled(
+				this.plugin.settings.history.viewType !==
+					viewTypeConfigs.pageView
+			);
+		});
+
+		sortMenu.showAtMouseEvent(event);
 	}
 }

@@ -31,7 +31,7 @@ export default class BookSimulatorPlugin extends Plugin {
 			);
 
 			// Add ribbon icon to open the view
-			this.addRibbonIcon("book-open", "Open Book Simulator", () => {
+			this.addRibbonIcon("book-text", "Open Book Simulator", () => {
 				this.activateView();
 			});
 
@@ -118,6 +118,7 @@ export default class BookSimulatorPlugin extends Plugin {
 	}
 
 	async saveSettings() {
+		console.log("Saving the following data :", this.settings);
 		await this.saveData(this.settings);
 	}
 

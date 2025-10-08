@@ -16,11 +16,25 @@ export enum folderFileNameConfigs {
 	hideBoth = 4,
 }
 
+export enum viewTypeConfigs {
+	infiniteView = 1,
+	pageView = 2,
+}
+
+export enum paginatedViewTypeConfigs {
+	contineousScroll = 1,
+	singlePage = 2,
+	twoPages = 3,
+}
+
 export interface BookSimulatorSettings {
 	openViewOnFolderClick: boolean;
 	history: {
 		lastSelectedFolder: string;
 		leftPanelState: boolean;
+		viewType: viewTypeConfigs;
+		paginatedViewType: paginatedViewTypeConfigs;
+		showHeaderFooter: boolean;
 	};
 	folderFileName: folderFileNameConfigs;
 }
@@ -30,6 +44,9 @@ export const DEFAULT_SETTINGS: BookSimulatorSettings = {
 	history: {
 		lastSelectedFolder: "",
 		leftPanelState: true,
+		viewType: viewTypeConfigs.infiniteView,
+		paginatedViewType: paginatedViewTypeConfigs.contineousScroll,
+		showHeaderFooter: true,
 	},
 	folderFileName: folderFileNameConfigs.showBoth,
 };
