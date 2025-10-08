@@ -89,9 +89,26 @@ Book Simulator Plugin Styles
 }
 
 .book-simulator-explorer-content {
-	flex: 1;
 	overflow-y: auto;
 	padding: 8px;
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	align-content: flex-start;
+	align-items: flex-start;
+}
+
+.book-simulator-snapshot-item {
+	background-color: var(--metadata-input-background-active);
+	padding: 5px;
+	border: 1px solid var(--background-activated-tab-header-dark);
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.book-simulator-snapshot-date {
+	color: var(--background-mod-right-CSS-light);
+	margin-block-start: 1rem;
 }
 
 /* File Tree Items */
@@ -258,4 +275,3 @@ Book Simulator Plugin Styles
 	/* border-top: 1px dashed var(--background-modifier-border); */
 	/* padding-top: 1em; */
 }
-
