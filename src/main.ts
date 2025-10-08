@@ -104,12 +104,17 @@ export default class BookSimulatorPlugin extends Plugin {
 			DEFAULT_SETTINGS,
 			await this.loadData()
 		);
-		this.saveSettings();
-
-		console.log("Settings loaded :", this.settings, "\nCondition :", this.settings.history.lastSelectedFolder.length > 0 ? true : false);
+		console.log(
+			"Settings loaded :",
+			this.settings,
+			"\nCondition :",
+			this.settings.history.lastSelectedFolder.length > 0 ? true : false
+		);
 		this.selectedFolder = this.settings.history.lastSelectedFolder
 			? (this.app.vault.getAbstractFileByPath(this.settings.history.lastSelectedFolder) as TFolder)
 			: null;
+
+		await this.saveSettings();
 	}
 
 	async saveSettings() {
