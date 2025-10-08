@@ -6,10 +6,11 @@ import {
 	TFolder,
 	TFile,
 } from "obsidian";
-import { FileTreeItem } from "../types";
+import { FileTreeItem, BookSimulatorSettings, viewTypeConfigs } from "../types";
 import { generateHierarchyMarkdown } from "../utils/hierarchyGenerator";
 import { splitMarkdownIntoChunks, isNearBottom } from "../utils/lazyLoadUtils";
 import { SnapshotNameModal } from "./snapshotNameModal";
+import { PageRenderer } from "./pageRenderer";
 
 /**
  * Component that renders a book view from a folder's notes
@@ -31,15 +32,21 @@ export class BookRenderer {
 	private refreshLeftPanel: () => void;
 	private scrollListener: ((e: Event) => void) | null = null;
 
+	// Pagination properties
+	private pageRenderer: PageRenderer | null = null;
+	private settings: BookSimulatorSettings;
+
 	constructor(
 		container: HTMLElement,
 		app: App,
 		selectedFolder: FileTreeItem | TFolder | null,
-		refreshLeftPanel: () => void
+		refreshLeftPanel: () => void,
+		settings: BookSimulatorSettings
 	) {
 		this.app = app;
 		this.container = container;
 		this.refreshLeftPanel = refreshLeftPanel;
+		this.settings = settings;
 
 		// Convert TFolder to FileTreeItem if needed
 		if (
@@ -78,6 +85,17 @@ export class BookRenderer {
 		}
 		// this.renderBook();
 		this.render();
+	}
+
+	/**
+	 * Update settings and re-render if needed
+	 */
+	updateSettings(settings: BookSimulatorSettings) {
+		this.settings = settings;
+		// Re-render to apply new settings
+		if (this.folder && this.fullMarkdown) {
+			this.renderWithCurrentMarkdown();
+		}
 	}
 
 	private render() {
@@ -168,6 +186,61 @@ export class BookRenderer {
 			this.contentContainer.empty();
 			this.isLoading = false;
 
+			// Render based on view type
+			await this.renderWithCurrentMarkdown();
+		} catch (error) {
+			console.error("Error rendering book:", error);
+			this.contentContainer.empty();
+			this.isLoading = false;
+			const errorEl = this.contentContainer.createDiv({
+				cls: "book-simulator-error",
+			});
+			errorEl.textContent = `Error rendering book: ${error.message}`;
+		}
+	}
+
+	/**
+	 * Render content based on current settings and markdown
+	 */
+	private async renderWithCurrentMarkdown() {
+		// Clear previous renderers
+		if (this.pageRenderer) {
+			this.pageRenderer.destroy();
+			this.pageRenderer = null;
+		}
+
+		if (this.renderComponent) {
+			this.renderComponent.unload();
+			this.renderComponent = null;
+		}
+
+		// Remove old scroll listener if exists
+		if (this.scrollListener) {
+			this.contentContainer.removeEventListener(
+				"scroll",
+				this.scrollListener
+			);
+			this.scrollListener = null;
+		}
+
+		this.contentContainer.empty();
+
+		// Render based on view type
+		if (this.settings.history.viewType === viewTypeConfigs.pageView) {
+			// Paginated view
+			const bookTitle =
+				this.folder?.path === "/" ? "Vault" : this.folder?.name || "Book";
+
+			this.pageRenderer = new PageRenderer(
+				this.contentContainer,
+				this.app,
+				this.fullMarkdown,
+				bookTitle,
+				this.settings.history.showHeaderFooter,
+				this.settings.history.paginatedViewType
+			);
+		} else {
+			// Infinite scroll view (default)
 			// Split markdown into chunks
 			this.markdownChunks = splitMarkdownIntoChunks(
 				this.fullMarkdown,
@@ -186,14 +259,6 @@ export class BookRenderer {
 
 			// Setup scroll listener for lazy loading
 			this.setupScrollListener();
-		} catch (error) {
-			console.error("Error rendering book:", error);
-			this.contentContainer.empty();
-			this.isLoading = false;
-			const errorEl = this.contentContainer.createDiv({
-				cls: "book-simulator-error",
-			});
-			errorEl.textContent = `Error rendering book: ${error.message}`;
 		}
 	}
 
@@ -415,24 +480,8 @@ export class BookRenderer {
 			this.contentContainer.empty();
 			this.isLoading = false;
 
-			// Split markdown into chunks
-			this.markdownChunks = splitMarkdownIntoChunks(
-				this.fullMarkdown,
-				100
-			);
-			this.currentChunkIndex = 0;
-
-			console.log(
-				`Lazy loading: Split markdown into ${
-					this.markdownChunks.length
-				} chunks (${this.fullMarkdown.split("\n").length} lines total)`
-			);
-
-			// Render first chunk
-			await this.renderNextChunk();
-
-			// Setup scroll listener for lazy loading
-			this.setupScrollListener();
+			// Render based on view type
+			await this.renderWithCurrentMarkdown();
 		} catch (error) {
 			console.error("Error rendering snapshot:", error);
 			this.contentContainer.empty();
@@ -466,6 +515,12 @@ export class BookRenderer {
 				this.scrollListener
 			);
 			this.scrollListener = null;
+		}
+
+		// Destroy page renderer
+		if (this.pageRenderer) {
+			this.pageRenderer.destroy();
+			this.pageRenderer = null;
 		}
 
 		if (this.renderComponent) {
