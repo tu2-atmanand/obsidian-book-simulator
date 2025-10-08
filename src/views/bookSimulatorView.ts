@@ -1,6 +1,5 @@
 import { ItemView, TFolder, WorkspaceLeaf } from "obsidian";
 import { VIEW_TYPE_BOOK_SIMULATOR, FileTreeItem } from "../types";
-import { VirtualFileExplorer } from "../components/virtualFileExplorer";
 import { BookRenderer } from "../components/bookRenderer";
 // import { buildFileTree } from "../utils/fileTreeUtils";
 import type BookSimulatorPlugin from "src/main";
@@ -11,11 +10,12 @@ import { RecentViewsExplorer } from "src/components/recentViews";
  */
 export class BookSimulatorView extends ItemView {
 	private plugin: BookSimulatorPlugin;
-	private fileExplorer: VirtualFileExplorer | null = null;
+	// private fileExplorer: VirtualFileExplorer | null = null;
 	private bookRenderer: BookRenderer | null = null;
 	private selectedFolder: FileTreeItem | TFolder | null = null;
 	private recentViewsContainer: HTMLElement | null = null;
 	private toggleButton: HTMLElement | null = null;
+	private recentViewsExplorer: RecentViewsExplorer | null = null;
 
 	constructor(
 		plugin: BookSimulatorPlugin,
@@ -84,14 +84,17 @@ export class BookSimulatorView extends ItemView {
 		// 	(folder) => this.handleFolderSelect(folder)
 		// );
 
-		new RecentViewsExplorer(this.recentViewsContainer, (recentView) => {
-			console.log("Recent view clicked.");
-		});
+		this.recentViewsExplorer = new RecentViewsExplorer(
+			this.app,
+			this.recentViewsContainer,
+			(snapshotPath) => this.handleSnapshotSelect(snapshotPath)
+		);
 
 		this.bookRenderer = new BookRenderer(
 			rendererContainer,
 			this.app,
-			this.selectedFolder
+			this.selectedFolder,
+			() => this.refreshSnapshots()
 		);
 
 		// Build and set file tree
@@ -145,6 +148,24 @@ export class BookSimulatorView extends ItemView {
 
 		if (this.bookRenderer) {
 			this.bookRenderer.setFolder(folderItem);
+		}
+	}
+
+	/**
+	 * Handle snapshot selection from the recent views explorer
+	 */
+	private async handleSnapshotSelect(snapshotPath: string) {
+		if (this.bookRenderer) {
+			await this.bookRenderer.openSnapshot(snapshotPath);
+		}
+	}
+
+	/**
+	 * Refresh the snapshots list in the recent views explorer
+	 */
+	public refreshSnapshots() {
+		if (this.recentViewsExplorer) {
+			this.recentViewsExplorer.refreshSnapshots();
 		}
 	}
 
