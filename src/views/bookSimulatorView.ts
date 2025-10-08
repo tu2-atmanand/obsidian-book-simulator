@@ -15,13 +15,12 @@ export class BookSimulatorView extends ItemView {
 	private bookRenderer: BookRenderer | null = null;
 	private selectedFolder: FileTreeItem | TFolder | null = null;
 	private recentViewsContainer: HTMLElement | null = null;
-	private isRecentViewsPanelVisible = true;
 	private toggleButton: HTMLElement | null = null;
 
 	constructor(
 		plugin: BookSimulatorPlugin,
 		leaf: WorkspaceLeaf,
-		selectedFolder: TFolder | FileTreeItem
+		selectedFolder: TFolder | FileTreeItem | null
 	) {
 		super(leaf);
 		this.plugin = plugin;
@@ -41,9 +40,13 @@ export class BookSimulatorView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
-		this.toggleButton = this.addAction("panel-left", "Toggle recent view panel", () => {
-			this.toggleRecentViewsPanel();
-		});
+		this.toggleButton = this.addAction(
+			"panel-left",
+			"Toggle recent view panel",
+			() => {
+				this.toggleRecentViewsPanel();
+			}
+		);
 		this.toggleButton.addClass("recent-views-panel-toggle-btn");
 
 		const container = this.containerEl.children[1];
@@ -62,6 +65,13 @@ export class BookSimulatorView extends ItemView {
 		this.recentViewsContainer = mainContainer.createDiv({
 			cls: "book-simulator-recent-views-panel",
 		});
+		if (this.plugin.settings.history.leftPanelState ?? true) {
+			// Show the panel
+			this.recentViewsContainer.removeClass("collapsed");
+		} else {
+			// Hide the panel
+			this.recentViewsContainer.addClass("collapsed");
+		}
 
 		// Right side - Book Renderer (80% width)
 		const rendererContainer = mainContainer.createDiv({
@@ -99,17 +109,17 @@ export class BookSimulatorView extends ItemView {
 		}
 	}
 
-	private handleFolderSelect(folder: FileTreeItem) {
-		this.selectedFolder = folder;
+	// private handleFolderSelect(folder: FileTreeItem) {
+	// 	this.selectedFolder = folder;
 
-		if (this.fileExplorer) {
-			this.fileExplorer.setSelectedPath(folder.path);
-		}
+	// 	if (this.fileExplorer) {
+	// 		this.fileExplorer.setSelectedPath(folder.path);
+	// 	}
 
-		if (this.bookRenderer) {
-			this.bookRenderer.setFolder(folder);
-		}
-	}
+	// 	if (this.bookRenderer) {
+	// 		this.bookRenderer.setFolder(folder);
+	// 	}
+	// }
 
 	/**
 	 * Update the selected folder from external source (e.g., when user clicks folder in Obsidian)
@@ -144,21 +154,25 @@ export class BookSimulatorView extends ItemView {
 	private toggleRecentViewsPanel() {
 		if (!this.recentViewsContainer) return;
 
-		this.isRecentViewsPanelVisible = !this.isRecentViewsPanelVisible;
+		this.plugin.settings.history.leftPanelState =
+			!this.plugin.settings.history.leftPanelState;
+		this.plugin.saveSettings();
 
 		// Update button tooltip
 		if (this.toggleButton) {
 			this.toggleButton.setAttribute(
-				"aria-label", 
-				this.isRecentViewsPanelVisible ? "Hide recent view panel" : "Show recent view panel"
+				"aria-label",
+				this.plugin.settings.history.leftPanelState
+					? "Hide recent view panel"
+					: "Show recent view panel"
 			);
 		}
 
-		if (this.isRecentViewsPanelVisible) {
+		if (this.plugin.settings.history.leftPanelState ?? true) {
 			// Show the panel
 			this.recentViewsContainer.removeClass("collapsed");
 			this.recentViewsContainer.addClass("expanding");
-			
+
 			// Remove expanding class after animation completes
 			setTimeout(() => {
 				this.recentViewsContainer?.removeClass("expanding");
@@ -167,7 +181,7 @@ export class BookSimulatorView extends ItemView {
 			// Hide the panel
 			this.recentViewsContainer.removeClass("expanding");
 			this.recentViewsContainer.addClass("collapsing");
-			
+
 			// Add collapsed class after animation completes
 			setTimeout(() => {
 				this.recentViewsContainer?.removeClass("collapsing");

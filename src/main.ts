@@ -10,11 +10,16 @@ import { BookSimulatorSettingsTab } from "./settings/settingsTab";
 
 export default class BookSimulatorPlugin extends Plugin {
 	settings: BookSimulatorSettings;
-	selectedFolder: TFolder | FileTreeItem;
+	selectedFolder: TFolder | FileTreeItem | null = null;
 
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new BookSimulatorSettingsTab(this.app, this));
+
+		console.log(
+			"Loaded last selected folder from settings :",
+			this.selectedFolder
+		);
 
 		// Register events and commands only on Layout is ready
 		this.app.workspace.onLayoutReady(async () => {
@@ -100,6 +105,11 @@ export default class BookSimulatorPlugin extends Plugin {
 			await this.loadData()
 		);
 		this.saveSettings();
+
+		console.log("Settings loaded :", this.settings, "\nCondition :", this.settings.history.lastSelectedFolder.length > 0 ? true : false);
+		this.selectedFolder = this.settings.history.lastSelectedFolder
+			? (this.app.vault.getAbstractFileByPath(this.settings.history.lastSelectedFolder) as TFolder)
+			: null;
 	}
 
 	async saveSettings() {
@@ -192,7 +202,7 @@ export default class BookSimulatorPlugin extends Plugin {
 	}
 
 	public saveSelectedFolderInHistory() {
-		this.settings.lastSelectedFolder = this.selectedFolder
+		this.settings.history.lastSelectedFolder = this.selectedFolder
 			? this.selectedFolder?.path
 			: "";
 		this.saveSettings();

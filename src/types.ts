@@ -10,13 +10,19 @@ export interface FolderInfo {
 }
 
 export interface BookSimulatorSettings {
-	lastSelectedFolder: string;
 	openViewOnFolderClick: boolean;
+	history: {
+		lastSelectedFolder: string;
+		leftPanelState: boolean;
+	};
 }
 
 export const DEFAULT_SETTINGS: BookSimulatorSettings = {
-	lastSelectedFolder: "",
 	openViewOnFolderClick: false,
+	history: {
+		lastSelectedFolder: "",
+		leftPanelState: true,
+	},
 };
 
 export const VIEW_TYPE_BOOK_SIMULATOR = "book-simulator-view";
