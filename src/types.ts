@@ -9,12 +9,20 @@ export interface FolderInfo {
 	path: string;
 }
 
+export enum folderFileNameConfigs {
+	showBoth = 1,
+	onlyShowFolderName = 2,
+	onlyShowNoteName = 3,
+	hideBoth = 4,
+}
+
 export interface BookSimulatorSettings {
 	openViewOnFolderClick: boolean;
 	history: {
 		lastSelectedFolder: string;
 		leftPanelState: boolean;
 	};
+	folderFileName: folderFileNameConfigs;
 }
 
 export const DEFAULT_SETTINGS: BookSimulatorSettings = {
@@ -23,6 +31,7 @@ export const DEFAULT_SETTINGS: BookSimulatorSettings = {
 		lastSelectedFolder: "",
 		leftPanelState: true,
 	},
+	folderFileName: folderFileNameConfigs.showBoth,
 };
 
 export const VIEW_TYPE_BOOK_SIMULATOR = "book-simulator-view";

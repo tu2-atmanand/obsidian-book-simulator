@@ -42,5 +42,30 @@ export class BookSimulatorSettingsTab extends PluginSettingTab {
 						this.openReloadNoticeIfNeeded();
 					})
 			);
+
+		// new Setting(containerEl)
+		// 	.setName("Folder and note name visibility")
+		// 	.setDesc(
+		// 		"Select 'show both' to see both the folder name and note names as the header. Select 'only show folder name' to see only the folder name as header and note name wont be rendered. Select 'only show note name' to dont render folder name as header but render note name. Select 'hide both' to dont render folder and file name, but if you have a 'folder-note' inside your folder, than the first heading from that file will be taken as the folder name to create the heading."
+		// 	)
+		// 	.addDropdown((dropdown) =>
+		// 		dropdown
+		// 			.addOptions({
+		// 				[cardSectionsVisibilityOptions.showDescriptionOnly]: t(
+		// 					"show-description-only"
+		// 				),
+		// 				[cardSectionsVisibilityOptions.showSubTasksOnly]:
+		// 					t("show-subtasks-only"),
+		// 				[cardSectionsVisibilityOptions.showBoth]:
+		// 					t("show-both"),
+		// 				[cardSectionsVisibilityOptions.hideBoth]:
+		// 					t("hide-both"),
+		// 			})
+		// 			.setValue(cardSectionsVisibility)
+		// 			.onChange(async (value) => {
+		// 				this.globalSettings!.cardSectionsVisibility = value;
+		// 				await this.saveSettings();
+		// 			})
+		// 	);
 	}
 }
