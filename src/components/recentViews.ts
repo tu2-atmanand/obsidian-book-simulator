@@ -1,74 +1,148 @@
-import { FileTreeItem } from "../types";
+import { App, TFile, TFolder } from "obsidian";
+
+interface SnapshotItem {
+	name: string;
+	path: string;
+	file: TFile;
+	lastModified: number;
+}
 
 /**
- * Virtual file explorer component using vanilla DOM
+ * Component that shows recent snapshots and allows opening them
  */
 export class RecentViewsExplorer {
 	private container: HTMLElement;
-	private fileTree: FileTreeItem | null = null;
-	private onFolderSelect: (folder: FileTreeItem) => void;
-	private selectedPath = "";
-	private expandedPaths = new Set<string>(["/"]); // Root is expanded by default
+	private app: App;
+	private onSnapshotSelect: (snapshotPath: string) => void;
+	private snapshots: SnapshotItem[] = [];
 
 	constructor(
+		app: App,
 		container: HTMLElement,
-		onFolderSelect: (folder: FileTreeItem) => void
+		onSnapshotSelect: (snapshotPath: string) => void
 	) {
+		this.app = app;
 		this.container = container;
-		this.onFolderSelect = onFolderSelect;
+		this.onSnapshotSelect = onSnapshotSelect;
+		this.loadSnapshots();
 		this.render();
 	}
 
-	setFileTree(fileTree: FileTreeItem | null) {
-		this.fileTree = fileTree;
+	/**
+	 * Refresh the snapshots list
+	 */
+	public refreshSnapshots() {
+		this.loadSnapshots();
 		this.render();
 	}
 
-	setSelectedPath(path: string) {
-		this.selectedPath = path;
-		this.render();
-	}
+	/**
+	 * Load snapshots from the .bookSimulatorSnapshots folder
+	 */
+	private async loadSnapshots() {
+		console.log(
+			"Entering the loadSnapshots function of RecentViewsExplorer..."
+		);
+		const snapshotsFolder = this.app.vault.getAbstractFileByPath(
+			"bookSimulatorSnapshots"
+		);
+		console.log("snapshotsFolder :", snapshotsFolder);
 
-	private toggleExpanded(path: string) {
-		if (this.expandedPaths.has(path)) {
-			this.expandedPaths.delete(path);
-		} else {
-			this.expandedPaths.add(path);
+		if (!snapshotsFolder || !(snapshotsFolder instanceof TFolder)) {
+			this.snapshots = [];
+			return;
 		}
-		this.render();
+
+		const snapshotFiles = snapshotsFolder.children.filter(
+			(child): child is TFile =>
+				child instanceof TFile && child.extension === "md"
+		);
+		console.log(
+			"Children in the hidden folder : ",
+			snapshotsFolder,
+			"\nChildrens :",
+			snapshotFiles
+		);
+
+		this.snapshots = snapshotFiles
+			.map((file: TFile) => ({
+				name: file.basename,
+				path: file.path,
+				file: file,
+				lastModified: file.stat.mtime,
+			}))
+			.sort(
+				(a: SnapshotItem, b: SnapshotItem) =>
+					b.lastModified - a.lastModified
+			); // Sort by last modified, newest first
+
+		console.log("loadSnapshots job done...");
 	}
 
 	private render() {
+		console.log("Entering the render function of RecentViewsExplorer...");
 		this.container.empty();
 		this.container.addClass("book-simulator-recent-views");
 
 		const header = this.container.createDiv({
 			cls: "book-simulator-explorer-header",
 		});
-		header.textContent = "Recent Views";
+		header.textContent = "Snapshots";
 
 		const contentEl = this.container.createDiv({
 			cls: "book-simulator-explorer-content",
 		});
 
-		if (!this.fileTree) {
+		if (this.snapshots.length === 0) {
 			contentEl.createDiv({
-				text: "Under Developement",
-				cls: "book-simulator-loading",
+				text: "No snapshots found",
+				cls: "book-simulator-empty-state",
 			});
 			return;
 		}
 
-		// this.renderFileTreeItem(contentEl, this.fileTree, 0);
+		// Render each snapshot
+		this.snapshots.forEach((snapshot) => {
+			this.renderSnapshotItem(contentEl, snapshot);
+		});
 	}
 
-	private renderFileTreeItem(
-		parentEl: HTMLElement,
-		item: FileTreeItem,
-		depth: number
-	) {
-		// const itemContainer = parentEl.createDiv({
-		// 	cls: "book-simulator-recent-item-container",
-		// });
+	private renderSnapshotItem(parentEl: HTMLElement, snapshot: SnapshotItem) {
+		const itemContainer = parentEl.createDiv({
+			cls: "book-simulator-snapshot-item",
+		});
+
+		const iconEl = itemContainer.createSpan({
+			cls: "book-simulator-snapshot-icon",
+		});
+		iconEl.textContent = "📄";
+
+		const nameEl = itemContainer.createSpan({
+			cls: "book-simulator-snapshot-name",
+		});
+		nameEl.textContent = snapshot.name;
+
+		const dateEl = itemContainer.createDiv({
+			cls: "book-simulator-snapshot-date",
+		});
+		const date = new Date(snapshot.lastModified);
+		dateEl.textContent =
+			date.toLocaleDateString() +
+			" " +
+			date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+		// Click handler
+		itemContainer.addEventListener("click", () => {
+			this.onSnapshotSelect(snapshot.path);
+		});
+
+		// Hover effect
+		itemContainer.addEventListener("mouseenter", () => {
+			itemContainer.addClass("is-hovered");
+		});
+
+		itemContainer.addEventListener("mouseleave", () => {
+			itemContainer.removeClass("is-hovered");
+		});
 	}
 }
