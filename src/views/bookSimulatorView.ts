@@ -8,7 +8,7 @@ import {
 import { BookRenderer } from "../components/bookRenderer";
 // import { buildFileTree } from "../utils/fileTreeUtils";
 import type BookSimulatorPlugin from "src/main";
-import { RecentViewsExplorer } from "src/components/recentViews";
+import { SnapshotsExplorer } from "src/components/snapshotsExplorer";
 
 /**
  * Custom ItemView for the Book Simulator
@@ -20,7 +20,7 @@ export class BookSimulatorView extends ItemView {
 	private selectedFolder: FileTreeItem | TFolder | null = null;
 	private recentViewsContainer: HTMLElement | null = null;
 	private toggleButton: HTMLElement | null = null;
-	private recentViewsExplorer: RecentViewsExplorer | null = null;
+	private SnapshotsExplorer: SnapshotsExplorer | null = null;
 
 	constructor(
 		plugin: BookSimulatorPlugin,
@@ -93,7 +93,7 @@ export class BookSimulatorView extends ItemView {
 		// 	(folder) => this.handleFolderSelect(folder)
 		// );
 
-		this.recentViewsExplorer = new RecentViewsExplorer(
+		this.SnapshotsExplorer = new SnapshotsExplorer(
 			this.app,
 			this.recentViewsContainer,
 			(snapshotPath) => this.handleSnapshotSelect(snapshotPath)
@@ -174,8 +174,8 @@ export class BookSimulatorView extends ItemView {
 	 * Refresh the snapshots list in the recent views explorer
 	 */
 	public refreshSnapshots() {
-		if (this.recentViewsExplorer) {
-			this.recentViewsExplorer.refreshSnapshots();
+		if (this.SnapshotsExplorer) {
+			this.SnapshotsExplorer.refreshSnapshots();
 		}
 	}
 

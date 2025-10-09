@@ -10,7 +10,7 @@ interface SnapshotItem {
 /**
  * Component that shows recent snapshots and allows opening them
  */
-export class RecentViewsExplorer {
+export class SnapshotsExplorer {
 	private container: HTMLElement;
 	private app: App;
 	private onSnapshotSelect: (snapshotPath: string) => void;
@@ -41,7 +41,7 @@ export class RecentViewsExplorer {
 	 */
 	private async loadSnapshots() {
 		console.log(
-			"Entering the loadSnapshots function of RecentViewsExplorer..."
+			"Entering the loadSnapshots function of SnapshotsExplorer..."
 		);
 		const snapshotsFolder = this.app.vault.getAbstractFileByPath(
 			"bookSimulatorSnapshots"
@@ -80,7 +80,7 @@ export class RecentViewsExplorer {
 	}
 
 	private render() {
-		console.log("Entering the render function of RecentViewsExplorer...");
+		console.log("Entering the render function of SnapshotsExplorer...");
 		this.container.empty();
 		this.container.addClass("book-simulator-recent-views");
 
