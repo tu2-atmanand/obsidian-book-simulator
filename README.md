@@ -1,4 +1,4 @@
-# Obsidian Book Simulator
+# Book Simulator
 
 A plugin for Obsidian (https://obsidian.md) that simulates a book view by combining multiple notes from a folder into a continuous reading experience. It uses the hierarchy of the folder to structure the chapters and sections of the book.
 
