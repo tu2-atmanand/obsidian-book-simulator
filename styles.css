@@ -104,6 +104,7 @@ Book Simulator Plugin Styles
 	border: 1px solid var(--background-activated-tab-header-dark);
 	border-radius: 5px;
 	cursor: pointer;
+	width: 100%;
 }
 
 .book-simulator-snapshot-date {
@@ -197,6 +198,7 @@ Book Simulator Plugin Styles
 	font-size: var(--font-text-size);
 	line-height: var(--line-height-normal);
 	color: var(--text-normal);
+	background: var(--background-mod-left-CSS-dark);
 }
 
 /* Loading and Empty States */
@@ -263,6 +265,71 @@ Book Simulator Plugin Styles
 	opacity: 1;
 }
 
+/* Global CSS Variables for Book Simulator */
+/* These variables are injected into the document root by the plugin */
+/* and can be used anywhere in Obsidian for book simulator features */
+
+/* Page-based layout styles using CSS variables */
+.book-simulator-page-view {
+	width: var(--book-simulator-page-width, 210mm);
+	height: var(--book-simulator-page-height, 297mm);
+	padding: var(--book-simulator-page-padding, 20mm);
+	background: white;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	margin: 20px auto;
+}
+
+.book-simulator-paginated-content {
+	page-break-after: always;
+	height: var(--book-simulator-page-height, 297mm);
+	overflow: hidden;
+}
+
+/* Snapshot indicator styling */
+.book-simulator-snapshot-indicator {
+	display: inline-block;
+	background: var(--background-modifier-border);
+	color: var(--text-muted);
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 12px;
+	margin-left: 8px;
+}
+
+/* Snapshot list styling */
+.book-simulator-snapshot-item {
+	display: flex;
+	align-items: center;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.1s;
+	margin-bottom: 4px;
+}
+
+.book-simulator-snapshot-item:hover,
+.book-simulator-snapshot-item.is-hovered {
+	background-color: var(--background-modifier-hover);
+}
+
+.book-simulator-snapshot-icon {
+	margin-right: 8px;
+	font-size: 16px;
+}
+
+.book-simulator-snapshot-name {
+	flex: 1;
+	font-size: 13px;
+	color: var(--text-normal);
+	font-weight: 500;
+}
+
+.book-simulator-snapshot-date {
+	font-size: 11px;
+	color: var(--text-muted);
+	margin-top: 2px;
+}
+
 /* Lazy loading chunk styling */
 .book-simulator-chunk {
 	/* Ensure smooth rendering of chunks */
@@ -270,10 +337,10 @@ Book Simulator Plugin Styles
 	padding: 0;
 }
 
+/* Lazy loading chunk separation */
 .book-simulator-chunk:not(:first-child) {
-	/* Add subtle separation between chunks for debugging (can be removed) */
-	/* border-top: 1px dashed var(--background-modifier-border); */
-	/* padding-top: 1em; */
+	/* Add a tiny margin for visual separation between chunks */
+	margin-top: 0.1em;
 }
 
 /* Pagination Styles */
@@ -309,7 +376,7 @@ Book Simulator Plugin Styles
 .book-simulator-page-content-area {
 	flex: 1;
 	overflow-y: auto;
-	padding: 20px;
+	padding-inline: 20px;
 	display: flex;
 	justify-content: center;
 	align-items: flex-start;
@@ -333,8 +400,10 @@ Book Simulator Plugin Styles
 
 /* Individual page styling */
 .book-simulator-page {
-	width: 210mm; /* A4 width */
-	min-height: 297mm; /* A4 height */
+	width: 210mm;
+	/* A4 width */
+	min-height: 297mm;
+	/* A4 height */
 	background-color: var(--background-primary);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	border: 1px solid var(--background-modifier-border);
@@ -357,14 +426,14 @@ Book Simulator Plugin Styles
 }
 
 .book-simulator-page-header-spacer {
-	padding: 15px 20mm;
+	padding: 5px 20mm;
 	min-height: 46px;
 }
 
 /* Page content */
 .book-simulator-page-content {
 	flex: 1;
-	padding: 20mm;
+	padding-inline: 20mm;
 	overflow: visible;
 	font-family: var(--font-text);
 	font-size: var(--font-text-size);
@@ -390,11 +459,15 @@ Book Simulator Plugin Styles
 /* Navigation controls */
 .book-simulator-navigation {
 	display: flex;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
 	justify-content: space-between;
 	align-items: center;
 	padding: 16px 24px;
 	border-top: 1px solid var(--background-modifier-border);
-	background-color: var(--background-secondary);
+	/* background-color: var(--background-secondary); */
 	gap: 16px;
 }
 
