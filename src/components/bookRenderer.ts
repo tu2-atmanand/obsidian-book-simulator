@@ -133,7 +133,11 @@ export class BookRenderer {
 			this.headerEl.textContent = "Book Simulator";
 		}
 
-		this.headerEl
+		const headerButtonsContainer = this.headerEl.createDiv({
+			cls: "book-simulator-renderer-header-btns",
+		});
+
+		headerButtonsContainer
 			.createEl("button", {
 				cls: "book-simulator-renderer-header-open-editor-btn",
 				text: "Open in editor",
@@ -142,7 +146,7 @@ export class BookRenderer {
 				this.openFullMarkdownInEditor();
 			});
 
-		this.headerEl
+		headerButtonsContainer
 			.createEl("button", {
 				cls: "book-simulator-renderer-header-save-snap-btn",
 				text: "Save snapshot",
@@ -457,20 +461,23 @@ export class BookRenderer {
 		if (this.folder) {
 			// Add snapshot indicator
 			this.headerEl.createDiv({
-				cls: "book-simulator-snapshot-indicator",
+				cls: "book-simulator-snapshot-header-indicator",
 				text: "📄 Snapshot",
 			});
-			this.headerEl.textContent = this.folder.name;
-		}
-
-		this.headerEl
-			.createEl("button", {
-				cls: "book-simulator-renderer-header-open-editor-btn",
-				text: "Open in editor",
-			})
-			.addEventListener("click", (ev: PointerEvent) => {
-				this.openFullMarkdownInEditor();
+			this.headerEl.createDiv({
+				cls: "book-simulator-snapshot-header-name",
+				text: this.folder.name,
 			});
+
+			this.headerEl
+				.createEl("button", {
+					cls: "book-simulator-renderer-header-open-editor-btn",
+					text: "Open in editor",
+				})
+				.addEventListener("click", (ev: PointerEvent) => {
+					this.openFullMarkdownInEditor();
+				});
+		}
 
 		// Clear content and remove old scroll listener
 		this.contentContainer.empty();

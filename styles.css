@@ -107,6 +107,11 @@ Book Simulator Plugin Styles
 	width: 100%;
 }
 
+.book-simulator-snapshot-item-name {
+	display: flex;
+	flex-direction: row;
+}
+
 .book-simulator-snapshot-date {
 	color: var(--background-mod-right-CSS-light);
 	margin-block-start: 1rem;
@@ -188,6 +193,12 @@ Book Simulator Plugin Styles
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
+}
+
+.book-simulator-renderer-header-btns {
+	display: flex;
+	flex-direction: row;
+	gap: 1rem;
 }
 
 .book-simulator-renderer-content {
@@ -286,7 +297,7 @@ Book Simulator Plugin Styles
 }
 
 /* Snapshot indicator styling */
-.book-simulator-snapshot-indicator {
+.book-simulator-snapshot-header-indicator {
 	display: inline-block;
 	background: var(--background-modifier-border);
 	color: var(--text-muted);
@@ -299,12 +310,14 @@ Book Simulator Plugin Styles
 /* Snapshot list styling */
 .book-simulator-snapshot-item {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	padding: 8px 12px;
 	border-radius: 4px;
 	cursor: pointer;
 	transition: background-color 0.1s;
 	margin-bottom: 4px;
+	gap: 8px;
+	flex-direction: column;
 }
 
 .book-simulator-snapshot-item:hover,

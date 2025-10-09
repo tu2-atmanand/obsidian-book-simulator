@@ -112,12 +112,16 @@ export class SnapshotsExplorer {
 			cls: "book-simulator-snapshot-item",
 		});
 
-		const iconEl = itemContainer.createSpan({
+		const itemNameContainer = itemContainer.createDiv({
+			cls: "book-simulator-snapshot-item-name",
+		});
+
+		const iconEl = itemNameContainer.createSpan({
 			cls: "book-simulator-snapshot-icon",
 		});
 		iconEl.textContent = "📄";
 
-		const nameEl = itemContainer.createSpan({
+		const nameEl = itemNameContainer.createSpan({
 			cls: "book-simulator-snapshot-name",
 		});
 		nameEl.textContent = snapshot.name;
