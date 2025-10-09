@@ -135,6 +135,15 @@ export class BookRenderer {
 
 		this.headerEl
 			.createEl("button", {
+				cls: "book-simulator-renderer-header-open-editor-btn",
+				text: "Open in editor",
+			})
+			.addEventListener("click", (ev: PointerEvent) => {
+				this.openFullMarkdownInEditor();
+			});
+
+		this.headerEl
+			.createEl("button", {
 				cls: "book-simulator-renderer-header-save-snap-btn",
 				text: "Save snapshot",
 			})
@@ -229,7 +238,9 @@ export class BookRenderer {
 		if (this.settings.history.viewType === viewTypeConfigs.pageView) {
 			// Paginated view
 			const bookTitle =
-				this.folder?.path === "/" ? "Vault" : this.folder?.name || "Book";
+				this.folder?.path === "/"
+					? "Vault"
+					: this.folder?.name || "Book";
 
 			this.pageRenderer = new PageRenderer(
 				this.contentContainer,
@@ -444,14 +455,22 @@ export class BookRenderer {
 
 		// Update header for snapshot
 		if (this.folder) {
+			// Add snapshot indicator
+			this.headerEl.createDiv({
+				cls: "book-simulator-snapshot-indicator",
+				text: "📄 Snapshot",
+			});
 			this.headerEl.textContent = this.folder.name;
 		}
 
-		// Add snapshot indicator
-		this.headerEl.createDiv({
-			cls: "book-simulator-snapshot-indicator",
-			text: "📄 Snapshot",
-		});
+		this.headerEl
+			.createEl("button", {
+				cls: "book-simulator-renderer-header-open-editor-btn",
+				text: "Open in editor",
+			})
+			.addEventListener("click", (ev: PointerEvent) => {
+				this.openFullMarkdownInEditor();
+			});
 
 		// Clear content and remove old scroll listener
 		this.contentContainer.empty();
@@ -505,6 +524,118 @@ export class BookRenderer {
 		const header = `---\n  snapshot_name: ${name}\n  created_date: ${timestamp}\n  source_folder: ${folderName}\n  source_path: ${folderPath}\n---\n\n`;
 
 		return header + this.fullMarkdown;
+	}
+
+	/**
+	 * Opens the full markdown content in the Obsidian editor in split view
+	 * If viewing a snapshot, opens the existing file
+	 * If not a snapshot, prompts user to save as snapshot first, then opens the file
+	 */
+	private async openFullMarkdownInEditor() {
+		try {
+			// Check if we're currently viewing a snapshot
+			const isViewingSnapshot = this.isViewingSnapshot();
+
+			if (isViewingSnapshot && this.folder) {
+				// Open the existing snapshot file
+				await this.openFileInSplitView(this.folder.path);
+			} else {
+				// Not a snapshot - prompt user to save first
+				if (!this.fullMarkdown) {
+					new Notice("No content to open in editor");
+					return;
+				}
+
+				const modal = new SnapshotNameModal(this.app, async (name) => {
+					try {
+						// Save the snapshot first
+						await this.saveSnapshotAndOpen(name);
+					} catch (error) {
+						console.error(
+							"Error saving and opening snapshot:",
+							error
+						);
+						new Notice(`Error: ${error.message}`);
+					}
+				});
+				modal.open();
+			}
+		} catch (error) {
+			console.error("Error opening markdown in editor:", error);
+			new Notice(`Error opening in editor: ${error.message}`);
+		}
+	}
+
+	/**
+	 * Checks if we're currently viewing a snapshot
+	 */
+	private isViewingSnapshot(): boolean {
+		return this.folder?.path?.includes("bookSimulatorSnapshots") || false;
+	}
+
+	/**
+	 * Saves a snapshot and then opens it in split view
+	 */
+	private async saveSnapshotAndOpen(name: string): Promise<void> {
+		// Ensure the snapshots folder exists
+		const snapshotsFolder = "bookSimulatorSnapshots";
+		const folder = this.app.vault.getAbstractFileByPath(snapshotsFolder);
+
+		if (!folder) {
+			await this.app.vault.createFolder(snapshotsFolder);
+		}
+
+		// Create the snapshot file
+		const fileName = `${name}.md`;
+		const filePath = `${snapshotsFolder}/${fileName}`;
+
+		// Check if file already exists
+		const existingFile = this.app.vault.getAbstractFileByPath(filePath);
+		if (existingFile) {
+			new Notice(
+				`Snapshot "${name}" already exists. Please choose a different name.`
+			);
+			return;
+		}
+
+		// Create the snapshot with metadata header
+		const snapshotContent = this.generateSnapshotContent(name);
+
+		await this.app.vault.create(filePath, snapshotContent);
+		new Notice(`Snapshot "${name}" saved successfully!`);
+		this.refreshLeftPanel();
+
+		// Now open the newly created file
+		await this.openFileInSplitView(filePath);
+	}
+
+	/**
+	 * Opens a file in split view using Obsidian's workspace API
+	 */
+	private async openFileInSplitView(filePath: string): Promise<void> {
+		const file = this.app.vault.getAbstractFileByPath(filePath);
+		if (!file || !(file instanceof TFile)) {
+			new Notice("File not found");
+			return;
+		}
+
+		// Use the provided workspace layout logic
+		const layoutEntries = Object.entries(this.app.workspace.getLayout());
+		const mainEntry = layoutEntries.find(([key]) => key === "main");
+
+		if (mainEntry) {
+			const mainLayout = mainEntry[1] as { children?: unknown[] };
+			if (mainLayout?.children && mainLayout.children.length > 1) {
+				// Create a new leaf in existing split
+				const newLeaf = this.app.workspace.getLeaf(false);
+				await newLeaf.openFile(file);
+			} else {
+				// Create a vertical split
+				await this.app.workspace
+					.getLeaf("split", "vertical")
+					.openFile(file);
+			}
+		}
 	}
 
 	destroy() {
