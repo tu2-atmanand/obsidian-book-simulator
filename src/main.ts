@@ -7,6 +7,7 @@ import {
 	FileTreeItem,
 } from "./types";
 import { BookSimulatorSettingsTab } from "./settings/settingsTab";
+import { setupBookSimulatorCSSVariables, cleanupBookSimulatorCSSVariables } from "./utils/paginationUtils";
 
 export default class BookSimulatorPlugin extends Plugin {
 	settings: BookSimulatorSettings;
@@ -15,6 +16,9 @@ export default class BookSimulatorPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new BookSimulatorSettingsTab(this.app, this));
+
+		// Setup CSS variables for global use
+		setupBookSimulatorCSSVariables();
 
 		console.log(
 			"Loaded last selected folder from settings :",
@@ -66,6 +70,9 @@ export default class BookSimulatorPlugin extends Plugin {
 	}
 
 	onunload() {
+		// Cleanup CSS variables
+		cleanupBookSimulatorCSSVariables();
+		
 		// Detach all leaves of this view type
 		// this.app.workspace.detachLeavesOfType(VIEW_TYPE_BOOK_SIMULATOR);
 	}

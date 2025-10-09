@@ -8,7 +8,7 @@ import {
 import { BookRenderer } from "../components/bookRenderer";
 // import { buildFileTree } from "../utils/fileTreeUtils";
 import type BookSimulatorPlugin from "src/main";
-import { RecentViewsExplorer } from "src/components/recentViews";
+import { SnapshotsExplorer } from "src/components/snapshotsExplorer";
 
 /**
  * Custom ItemView for the Book Simulator
@@ -20,7 +20,7 @@ export class BookSimulatorView extends ItemView {
 	private selectedFolder: FileTreeItem | TFolder | null = null;
 	private recentViewsContainer: HTMLElement | null = null;
 	private toggleButton: HTMLElement | null = null;
-	private recentViewsExplorer: RecentViewsExplorer | null = null;
+	private SnapshotsExplorer: SnapshotsExplorer | null = null;
 
 	constructor(
 		plugin: BookSimulatorPlugin,
@@ -93,7 +93,7 @@ export class BookSimulatorView extends ItemView {
 		// 	(folder) => this.handleFolderSelect(folder)
 		// );
 
-		this.recentViewsExplorer = new RecentViewsExplorer(
+		this.SnapshotsExplorer = new SnapshotsExplorer(
 			this.app,
 			this.recentViewsContainer,
 			(snapshotPath) => this.handleSnapshotSelect(snapshotPath)
@@ -103,7 +103,8 @@ export class BookSimulatorView extends ItemView {
 			rendererContainer,
 			this.app,
 			this.selectedFolder,
-			() => this.refreshSnapshots()
+			() => this.refreshSnapshots(),
+			this.plugin.settings
 		);
 
 		// Build and set file tree
@@ -173,8 +174,8 @@ export class BookSimulatorView extends ItemView {
 	 * Refresh the snapshots list in the recent views explorer
 	 */
 	public refreshSnapshots() {
-		if (this.recentViewsExplorer) {
-			this.recentViewsExplorer.refreshSnapshots();
+		if (this.SnapshotsExplorer) {
+			this.SnapshotsExplorer.refreshSnapshots();
 		}
 	}
 
@@ -239,7 +240,11 @@ export class BookSimulatorView extends ItemView {
 				// Call here function to switch the view.
 				this.plugin.settings.history.viewType =
 					viewTypeConfigs.infiniteView;
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
+				// Update renderer with new settings
+				if (this.bookRenderer) {
+					this.bookRenderer.updateSettings(this.plugin.settings);
+				}
 			});
 			// item.checked =
 			// 	this.plugin.settings.history.viewType ===
@@ -256,7 +261,11 @@ export class BookSimulatorView extends ItemView {
 				// Call here function to switch the view.
 				this.plugin.settings.history.viewType =
 					viewTypeConfigs.pageView;
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
+				// Update renderer with new settings
+				if (this.bookRenderer) {
+					this.bookRenderer.updateSettings(this.plugin.settings);
+				}
 			});
 			// item.checked =
 			// 	this.plugin.settings.history.viewType ===
@@ -285,7 +294,11 @@ export class BookSimulatorView extends ItemView {
 				// Call here function to switch the paginated view mode.
 				this.plugin.settings.history.paginatedViewType =
 					paginatedViewTypeConfigs.contineousScroll;
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
+				// Update renderer with new settings
+				if (this.bookRenderer) {
+					this.bookRenderer.updateSettings(this.plugin.settings);
+				}
 			});
 			item.setDisabled(
 				this.plugin.settings.history.viewType !==
@@ -303,7 +316,11 @@ export class BookSimulatorView extends ItemView {
 				// Call here function to switch the paginated view mode.
 				this.plugin.settings.history.paginatedViewType =
 					paginatedViewTypeConfigs.singlePage;
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
+				// Update renderer with new settings
+				if (this.bookRenderer) {
+					this.bookRenderer.updateSettings(this.plugin.settings);
+				}
 			});
 			item.setDisabled(
 				this.plugin.settings.history.viewType !==
@@ -321,7 +338,11 @@ export class BookSimulatorView extends ItemView {
 				// Call here function to switch the paginated view mode.
 				this.plugin.settings.history.paginatedViewType =
 					paginatedViewTypeConfigs.twoPages;
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
+				// Update renderer with new settings
+				if (this.bookRenderer) {
+					this.bookRenderer.updateSettings(this.plugin.settings);
+				}
 			});
 			item.setDisabled(
 				this.plugin.settings.history.viewType !==
@@ -338,7 +359,11 @@ export class BookSimulatorView extends ItemView {
 				// Call here function to render the footer and header inside the page.
 				this.plugin.settings.history.showHeaderFooter =
 					!this.plugin.settings.history.showHeaderFooter;
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
+				// Update renderer with new settings
+				if (this.bookRenderer) {
+					this.bookRenderer.updateSettings(this.plugin.settings);
+				}
 			});
 			item.setDisabled(
 				this.plugin.settings.history.viewType !==
