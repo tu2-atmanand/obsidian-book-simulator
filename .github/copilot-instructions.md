@@ -107,6 +107,25 @@ try {
 - Uses Obsidian's existing classes (e.g., `markdown-reading-view`)
 - Custom classes follow `book-simulator-*` naming convention
 - Split-panel layout implemented via CSS Grid/Flexbox
+- Global CSS variables injected into document root for cross-component use
+
+### CSS Variable System
+The plugin injects CSS variables into the document root for global access:
+- `--book-simulator-page-width`: Page width (default: 210mm)
+- `--book-simulator-page-height`: Page height (default: 297mm) 
+- `--book-simulator-page-padding`: Page padding (default: 20mm)
+- `--book-simulator-lines-per-page`: Lines per page (default: 45)
+
+Use utility functions from `paginationUtils.ts`:
+```typescript
+import { getCSSVariable, updateCSSVariable } from '../utils/paginationUtils';
+
+// Get current page height
+const pageHeight = getCSSVariable('--book-simulator-page-height');
+
+// Update page width dynamically
+updateCSSVariable('--book-simulator-page-width', '8.5in');
+```
 
 ### File System Integration
 - Reads all `.md` files from selected folder and subfolders
