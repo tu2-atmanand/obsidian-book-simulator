@@ -18,6 +18,10 @@ A plugin for Obsidian (https://obsidian.md) that simulates a book view by combin
 
 ## Installation
 
+### Using BRAT (Recommended for testing)
+
+- Follow the steps mentioned here : https://github.com/tu2-atmanand/obsidian-book-simulator/releases/tag/0.1.1
+
 ### From Obsidian Community Plugins (once released)
 
 1. Open Settings → Community plugins
